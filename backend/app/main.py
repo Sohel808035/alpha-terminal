@@ -1,15 +1,13 @@
 from fastapi import FastAPI
-from sqlalchemy import create_engine, text
-from app.config import DATABASE_URL
+from app.db.base import Base
+from app.db.session import engine
+from app import models  # IMPORTANT: registers all models
 
 app = FastAPI(title="Alpha Terminal API")
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-
 @app.on_event("startup")
-def startup_db_check():
-    with engine.connect() as conn:
-        conn.execute(text("SELECT 1"))
+def startup():
+    Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
